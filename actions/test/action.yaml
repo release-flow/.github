@@ -9,7 +9,7 @@ name: "Create a release"
 description: "Creates a release"
 
 inputs:
-  github-token:
+  github_token:
     description: "GitHub token of a user with permission to create a release"
     required: true
   tag_name:
@@ -39,8 +39,14 @@ runs:
     - id: create-release
       name: "Create release"
       uses: "actions/github-script@v7.0.1"
+      env:
+        INPUT_TAG_NAME: "${{ inputs.tag_name }}"
+        INPUT_RELEASE_NAME: "${{ inputs.release_name }}"
+        INPUT_BODY: "${{ inputs.body }}"
+        INPUT_DRAFT: "${{ inputs.draft }}"
+        INPUT_PRERELEASE: "${{ inputs.prerelease }}"
       with:
-        github-token: "${{ inputs.github-token }}"
+        github-token: "${{ inputs.github_token }}"
         script: |
           const tag_name = core.getInput("tag_name", { required: true });
           const release_name = core.getInput("release_name") || `Release ${tag_name}`;
