@@ -59,3 +59,5 @@ runs:
           core.info(`body = ${body}`);
           core.info(`prerelease = ${prerelease}`);
           core.info(`draft = ${draft}`);
+
+          core.setOutput("html_url", `www-${tag_name}`)
