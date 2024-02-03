@@ -1,0 +1,106 @@
+# https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs-for-composite-run-steps-actions
+# https://docs.github.com/en/rest/releases/releases#create-a-release
+# https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
+
+name: "Create a release"
+
+description: "Creates a release"
+
+inputs:
+    github-token:
+        description: "GitHub token of a user with permission to create a release"
+        required: true
+    tag_name:
+        description: "The name of the tag for this release"
+        required: true
+    release_name:
+        description: "The name of the release. Default: `Release {tag_name}`"
+        required: false
+    body:
+        description: "Text describing the contents of the release"
+        required: true
+    draft:
+        description: "`true` to create a draft (unpublished) release, `false` to create a published one. Default: `false`"
+        required: false
+        default: false
+    prerelease:
+        description: "`true` to identify the release as a prerelease. `false` to identify the release as a full release. Default: `false`"
+        default: false
+
+outputs:
+    html_url:
+        description: "The URL users can navigate to in order to view the release. e.g. `https://github.com/octocat/Hello-World/releases/v1.0.0`"
+        value: ${{ steps.create-release.outputs.html_url }}
+runs:
+    using: "composite"
+
+    steps:
+        - id: create-release
+          name: "Create release"
+          uses: "actions/github-script@v7.0.1"
+          env:
+              TAG_NAME: "${{ inputs.tag_name }}"
+              RELEASE_NAME: "${{ inputs.release_name }}"
+              BODY: "${{ inputs.body }}"
+              IS_DRAFT: "${{ inputs.draft }}"
+          with:
+              github-token: "${{ inputs.github-token }}"
+              script: |
+                function getInput(name, required, dft) {
+                    name = name.toUpperCase();
+                    const value = process.env[name];
+                    if ((value === undefined)) {
+                        if (required){
+                            const msg = `The environment variable '${name}' is not defined.`
+                            core.setFailed(msg)
+                            throw new Error(msg);
+                        }
+
+                        return dft;
+                    }
+                    return value;
+                }
+
+                function toBoolean(str){
+                    switch(stringValue?.toLowerCase()?.trim()){
+                        case "true":
+                        case "yes":
+                        case "1":
+                        return true;
+
+                        case "false":
+                        case "no":
+                        case "0":
+                        case null:
+                        case undefined:
+                        return false;
+
+                        default:
+                        return JSON.parse(stringValue);
+                    }
+                }
+                const tag_name = getInput("tag_name");
+                const release_name = getInput("release_name", false, `Release ${tag_name}`);
+                const body = getInput("body");
+                const prerelease = toBoolean(getInput("prerelease", false, false));
+                const draft = toBoolean(getInput("draft", false, false));
+
+                try {
+                    const response = await github.rest.repos.createRelease({
+                      draft: draft,
+                      generate_release_notes: true,
+                      name: release_name,
+                      owner: context.repo.owner,
+                      prerelease: false,
+                      repo: context.repo.repo,
+                      tag_name: tag_name,
+                    });
+
+                    core.setOutput('html_url', response.data.html_url);
+                    core.setOutput('id', response.data.id);
+                    core.setOutput('upload_url', response.data.upload_url);
+                } catch (error) {
+                    core.setFailed(error.message);
+                }
