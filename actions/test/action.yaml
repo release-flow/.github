@@ -52,7 +52,7 @@ runs:
           const release_name = core.getInput("release_name") || `Release ${tag_name}`;
           const body = core.getInput("body", { required: true });
           const prerelease = core.getBooleanInput("prerelease");
-          const draft = toBoolean(getInput("draft", false, false));
+          const draft = core.getBooleanInput("draft");
 
           core.info(`tag_name = ${tag_name}`);
           core.info(`release_name = ${release_name}`);
