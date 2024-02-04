@@ -51,8 +51,8 @@ runs:
       name: "Create release"
       uses: "actions/github-script@v7.0.1"
       env:
-        INPUT_TAG_NAME: "${{ inputs.tag-name }}"
-        INPUT_RELEASE_NAME: "${{ inputs.release-name }}"
+        INPUT_TAG-NAME: "${{ inputs.tag-name }}"
+        INPUT_RELEASE-NAME: "${{ inputs.release-name }}"
         INPUT_BODY: "${{ inputs.body }}"
         INPUT_DRAFT: "${{ inputs.draft }}"
         INPUT_PRERELEASE: "${{ inputs.prerelease }}"
