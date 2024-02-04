@@ -6,6 +6,8 @@
 # https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
 # https://github.com/actions/create-release
 
+# NOTE: Any workflow that uses this action needs content: write permission
+
 name: "Create a release"
 
 description: "Creates a release"
